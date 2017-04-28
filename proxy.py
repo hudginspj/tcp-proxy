@@ -2,9 +2,20 @@ import socket
 import sys
 from thread import start_new_thread 
 
-port = 9001
-maxConn = 5
+port = 80
+maxConn = 15
 bufferSize = 8192
+webserver = "192.168.1.2"
+
+
+def check_blacklist(data):
+    blacklist = ["--", "0=0", ">", "<", "\'", "\""]
+    for badword in blacklist:
+        if badword in data:
+           return True
+    return False
+
+
 
 def proxy(webserver, port, conn, data, addr):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -28,6 +39,10 @@ def conn_string(conn, data, addr):
     try:
         first_line = data.split('\n')[0]
         url = first_line.split(' ')[1]
+        if check_blacklist(url):
+           print "ATTACK BLOCKED"
+           conn.close()
+           return
         http_pos = url.find("://")
         if (http_pos==-1):
             temp = url
@@ -47,13 +62,14 @@ def conn_string(conn, data, addr):
             port = int((temp[(port_pos+1):])[:webserver_pos-port_pos-1])
             webserver = temp[:port_pos]
         print "starting proxy"
-        proxy(webserver, 8000, conn, data, addr)
+        #proxy(webserver, 8000, conn, data, addr)
+	proxy(webserver, 80, conn, data, addr)
     except Exception, e:
 		pass
        
 def start():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind(("127.0.0.1", port))
+    s.bind(("192.168.1.3", port))
     s.listen(maxConn)
     while True:
         try:
@@ -66,7 +82,8 @@ def start():
 			s.close()
 			print "Shutting Down Proxy"
 			sys.exit(1)
-        
+
+webserver = raw_input("Enter address of websever: ")        
 start()
 
 
