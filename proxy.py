@@ -47,7 +47,7 @@ def conn_string(conn, data, addr):
             port = int((temp[(port_pos+1):])[:webserver_pos-port_pos-1])
             webserver = temp[:port_pos]
         print "starting proxy"
-        proxy(webserver, 80, conn, data, addr)
+        proxy(webserver, 8000, conn, data, addr)
     except Exception, e:
 		pass
        
