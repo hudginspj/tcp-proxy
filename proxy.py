@@ -3,13 +3,13 @@ import sys
 from thread import start_new_thread 
 
 port = 80
-maxConn = 15
+maxConn = 1500
 bufferSize = 8192
-webserver = "192.168.1.2"
+pwebserver = "192.168.1.2"
 
 
 def check_blacklist(data):
-    blacklist = ["--", "0=0", ">", "<", "\'", "\""]
+    blacklist = ["--", "0=0", ">", "<", "'", '"']
     for badword in blacklist:
         if badword in data:
            return True
@@ -63,14 +63,16 @@ def conn_string(conn, data, addr):
             webserver = temp[:port_pos]
         print "starting proxy"
         #proxy(webserver, 8000, conn, data, addr)
-	proxy(webserver, 80, conn, data, addr)
+	proxy(pwebserver, 80, conn, data, addr)
     except Exception, e:
 		pass
        
 def start():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind(("192.168.1.3", port))
+    #s.bind(("192.168.1.3", port))
+    s.bind(("127.0.0.1", port))
     s.listen(maxConn)
+    print "Running proxy"
     while True:
         try:
             conn, addr = s.accept()
@@ -83,7 +85,7 @@ def start():
 			print "Shutting Down Proxy"
 			sys.exit(1)
 
-webserver = raw_input("Enter address of websever: ")        
+#pwebserver = raw_input("Enter address of websever: ")        
 start()
 
 
