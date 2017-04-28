@@ -1,6 +1,7 @@
 import socket
 import sys
 from thread import start_new_thread 
+import urllib
 
 port = 80
 maxConn = 1500
@@ -8,11 +9,17 @@ bufferSize = 8192
 pwebserver = "192.168.1.2"
 
 
-def check_blacklist(data):
+def check_blacklist(url):
     blacklist = ["--", "0=0", ">", "<", "'", '"']
-    for badword in blacklist:
-        if badword in data:
+    decoded = urllib.unquote(url).decode('utf8')
+    print "Checking blacklist: "
+    print url
+    print decoded
+    for badword in blacklist:    
+        if badword in url or badword in decoded:
+           print "Looks bad"
            return True
+    print "Looks good"
     return False
 
 
@@ -39,6 +46,7 @@ def conn_string(conn, data, addr):
     try:
         first_line = data.split('\n')[0]
         url = first_line.split(' ')[1]
+        print "About to check blacklist"
         if check_blacklist(url):
            print "ATTACK BLOCKED"
            conn.close()
@@ -65,12 +73,14 @@ def conn_string(conn, data, addr):
         #proxy(webserver, 8000, conn, data, addr)
 	proxy(pwebserver, 80, conn, data, addr)
     except Exception, e:
-		pass
+                print "Exception:"
+                print e
+                pass
        
 def start():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    #s.bind(("192.168.1.3", port))
-    s.bind(("127.0.0.1", port))
+    s.bind(("192.168.1.3", port))
+    #s.bind(("127.0.0.1", port))
     s.listen(maxConn)
     print "Running proxy"
     while True:
