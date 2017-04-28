@@ -2,14 +2,18 @@ import socket
 import sys
 from thread import start_new_thread 
 
-port = 8888
+port = 9001
 maxConn = 5
 bufferSize = 8192
 
 def proxy(webserver, port, conn, data, addr):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((webserver, port))
+    print "Got here"
+    print len(data)
+    print data
     sock.send(data)
+    print "got sdf"
     print data
     while True:
         reply = sock.recv(bufferSize)
@@ -42,19 +46,21 @@ def conn_string(conn, data, addr):
         else:
             port = int((temp[(port_pos+1):])[:webserver_pos-port_pos-1])
             webserver = temp[:port_pos]
-
-        proxy(webserver, 80, conn, addr, data)
+        print "starting proxy"
+        proxy(webserver, 80, conn, data, addr)
     except Exception, e:
 		pass
        
 def start():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind(("localhost", port))
+    s.bind(("127.0.0.1", port))
     s.listen(maxConn)
     while True:
-		try:
+        try:
             conn, addr = s.accept()
+            print "Connection accepted"
             data = conn.recv(bufferSize)
+            print data
             start_new_thread(conn_string, (conn, data, addr))
         except KeyboardInterrupt:
 			s.close()
