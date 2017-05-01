@@ -7,7 +7,7 @@ import urllib
 port = 80
 maxConn = 1500
 bufferSize = 8192
-pwebserver = "127.0.0.1"
+pwebserver = "192.168.1.2"
 addrmap = {}
 blocked = {}
 perm_block = []
@@ -71,7 +71,7 @@ def conn_string(conn, data, addr):
             port = int((temp[(port_pos+1):])[:webserver_pos-port_pos-1])
             webserver = temp[:port_pos]
         #proxy(webserver, 8000, conn, data, addr)
-        proxy(pwebserver, 8000, conn, data, addr)
+        proxy(pwebserver, 80, conn, data, addr)
     except Exception, e:
                 print "Exception:"
                 print e
@@ -79,8 +79,8 @@ def conn_string(conn, data, addr):
 
 def start():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    #s.bind(("192.168.1.3", port))
-    s.bind(("127.0.0.1", port))
+    s.bind(("192.168.1.3", port))
+    #s.bind(("127.0.0.1", port))
     s.listen(maxConn)
     print "[--] Running proxy"
     while True:
