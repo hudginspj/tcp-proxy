@@ -7,10 +7,12 @@ import urllib
 port = 80
 maxConn = 1500
 bufferSize = 8192
-pwebserver = "192.168.1.2"
+pwebserver = ""
+proxyip = ""
 addrmap = {}
 blocked = {}
 perm_block = []
+ban = True
 
 def check_blacklist(url, typ):
     blacklist = ["--", "0=0", ">", "<", "'", '"']
@@ -47,30 +49,11 @@ def conn_string(conn, data, addr):
         if check_blacklist(url, "GET") or check_blacklist(post_data, "POST"):
            conn.send("<h1>403 - Request Denied. You've been Perma-banned.</h1>")
            print "ATTACK BLOCKED - IP Perma-banned"
-           perm_block.append(addr[0])
+           if (ban): perm_block.append(addr[0])
            conn.close()
            return
         else:
            print "[--] Data is clean - forwarding through."
-        http_pos = url.find("://")
-        if (http_pos==-1):
-            temp = url
-        else:
-            temp = url[(http_pos+3):]
-        port_pos = temp.find(":")
-
-        webserver_pos = temp.find("/")
-        if webserver_pos == -1:
-            webserver_pos = len(temp)
-        webserver = ""
-        port = -1
-        if (port_pos==-1 or webserver_pos < port_pos):
-            port = 80
-            webserver = temp[:webserver_pos]
-        else:
-            port = int((temp[(port_pos+1):])[:webserver_pos-port_pos-1])
-            webserver = temp[:port_pos]
-        #proxy(webserver, 8000, conn, data, addr)
         proxy(pwebserver, 80, conn, data, addr)
     except Exception, e:
                 print "Exception:"
@@ -79,8 +62,7 @@ def conn_string(conn, data, addr):
 
 def start():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind(("192.168.1.3", port))
-    #s.bind(("127.0.0.1", port))
+    s.bind((proxyip, port))
     s.listen(maxConn)
     print "[--] Running proxy"
     while True:
@@ -133,5 +115,12 @@ def start():
 			print "[--] Shutting Down Proxy"
 			sys.exit(1)
 
-#pwebserver = raw_input("Enter address of websever: ")
+pwebserver = raw_input("Enter address of websever: ")
+proxyip = raw_input("Enter address of this proxy: ")
+ban = (raw_input("Enable banning Y/n? ") == "Y")
+if (ban):
+   print "Banning enabled"
+else:
+   print "Banning disabled"
+
 start()
